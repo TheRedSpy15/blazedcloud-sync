@@ -1,0 +1,6 @@
+httpx==0.26.0
+keyring==24.3.0
+pywin32==306
+Requests==2.31.0
+rich==13.7.0
+tinydb==4.8.0
