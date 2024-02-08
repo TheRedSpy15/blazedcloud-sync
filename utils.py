@@ -1,9 +1,13 @@
 import asyncio
 import datetime
 import logging
-from tkinter import Tk
+import os
+import sys
+import zipfile
+from io import BytesIO
 from tkinter.filedialog import askdirectory
 
+import requests
 from rich.console import Console
 from rich.panel import Panel
 
@@ -11,6 +15,8 @@ from constants import TOOL_VERSION
 from models.fileObject import FileObject
 
 console = Console()
+
+isUpdateAvailable = False
 
 
 def promptUserForOfflineFolder():
@@ -21,7 +27,6 @@ def promptUserForOfflineFolder():
     """
 
     logging.info("Prompting user for offline folder...")
-    Tk().withdraw()  # we don't want a full GUI, so keep the root window from appearing
     return askdirectory(
         mustexist=True
     )  # show an "Open" dialog box and return the path to the selected file
@@ -32,6 +37,8 @@ def checkIfUpdateAvailable():
     Display a message if there is an update available
     """
     from api_service import get_latest_version
+
+    global isUpdateAvailable
 
     try:
         loop = asyncio.get_event_loop()
@@ -53,6 +60,55 @@ def checkIfUpdateAvailable():
                 title="Update Available",
             )
         )
+        isUpdateAvailable = True
+
+
+def runUpdate():
+    if not isUpdateAvailable:
+        console.print("[red]No update available")
+        return
+
+    latest = None
+    try:
+        from api_service import get_latest_version
+
+        loop = asyncio.get_event_loop()
+        latest = loop.run_until_complete(get_latest_version())
+        if latest is None:
+            return
+    except Exception as e:
+        logging.error(f"Failed to check for update: {e}")
+        return
+
+    if latest is None:
+        logging.error("Failed to update")
+        return
+
+    # GitHub API endpoint for releases
+    releases_url = (
+        "https://api.github.com/repos/TheRedSpy15/blazedcloud-sync/releases/latest"
+    )
+    print(releases_url)
+
+    # Make a request to get the latest release information
+    response = requests.get(releases_url)
+    release_data = response.json()
+    print(release_data)
+
+    # Get the download URL for the latest release
+    download_url = release_data["assets"][0]["browser_download_url"]
+    print(download_url)
+
+    # Download the ZIP file containing the executable
+    zip_content = requests.get(download_url).content
+
+    # Extract the contents of the ZIP file
+    print("Extracting release to", os.getcwd())
+    with zipfile.ZipFile(BytesIO(zip_content), "r") as zip_ref:
+        zip_ref.extractall()
+
+    os.system(f"start blazedcloud-sync-{latest}.exe")
+    sys.exit()
 
 
 def convertUsageToString(bytes, isTerabyteActive):
@@ -86,6 +142,17 @@ def formatBytesToString(bytes):
         return f"{round(bytes / 1024 ** 3, capacity)} GB"
 
     return f"{round(bytes / 1024 ** 4, capacity)} TB"
+
+
+def deleteOtherReleaseExecutables():
+    """
+    Deletes all other release executables in the current directory
+    """
+    import os
+
+    for file in os.listdir():
+        if file.endswith(".exe") and file != f"blazedcloud-sync-{TOOL_VERSION}.exe":
+            os.remove(file)
 
 
 def getAllFilesFromFolder(folder):

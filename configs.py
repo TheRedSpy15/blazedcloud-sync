@@ -45,6 +45,9 @@ def getOfflineFolder() -> str | None:
         return None
 
     extractedFolder = folder[0].get("offlineFolder")
+    if extractedFolder is None or len(extractedFolder) == 0:
+        return None
+
     logging.info(f"Offline folder: {extractedFolder}")
 
     # if windows, replace / with \

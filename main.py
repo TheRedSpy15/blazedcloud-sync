@@ -10,7 +10,11 @@ from rich.table import Table
 from auth import clearSavedAuth, initAuth
 from configs import getLastSync, updateOfflineFolder
 from sync import Sync, getOfflineFolder
-from utils import checkIfUpdateAvailable
+from utils import (
+    checkIfUpdateAvailable,
+    deleteOtherReleaseExecutables,
+    runUpdate,
+)
 
 banner = """
 ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
@@ -44,26 +48,32 @@ def showMenu():
         expand=True,
         show_header=False,
     )
-    exampleStatus = [
+    statusData = [
         "Last Sync: " + getLastSync(),
         "Offline Folder:",
         "[yellow]" + getOfflineFolder()
         if getOfflineFolder() is not None
         else "[red]Not Set",
     ]
-    for status in exampleStatus:
-        statusTable.add_row(status)
+    import utils
+
+    if utils.isUpdateAvailable:
+        statusData.append("[yellow]Update Available")
+
+    for statusData in statusData:
+        statusTable.add_row(statusData)
 
     options = [
         "(1) Sync",
         "(2) Set Offline Folder",
-        "(3) Sign out",
-        "(4) Exit",
+        "(3) Update",
+        "(4) Sign out",
+        "(5) Exit",
     ]
     for option in options:
         optionTable.add_row(option)
 
-    columns = Columns([optionTable, statusTable], equal=True, expand=True)
+    columns = Columns([optionTable, statusTable], expand=True)
 
     console.print(Panel(columns, title="Menu", style="bold green", expand=False))
     choice = Prompt.ask("Action Select")
@@ -78,10 +88,13 @@ def showMenu():
         console.print("[green]Setting Offline Folder")
         updateOfflineFolder()
     elif choice == "3":
+        console.print("[green]Launching Update Script")
+        runUpdate()
+    elif choice == "4":
         console.print("[green]Signing Out")
         clearSavedAuth()
         return
-    elif choice == "4":
+    elif choice == "5":
         console.print("[green]Exiting")
         return
     else:
@@ -92,6 +105,10 @@ def showMenu():
 
 
 if __name__ == "__main__":
+    try:
+        deleteOtherReleaseExecutables()
+    except Exception as e:
+        logging.error("Failed to delete other release executables: " + str(e))
     console.print(banner, style="bold red", justify="center")
 
     try:
