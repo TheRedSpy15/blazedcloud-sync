@@ -1,3 +1,5 @@
+[![Maintainability](https://api.codeclimate.com/v1/badges/93656683239104137b3e/maintainability)](https://codeclimate.com/github/TheRedSpy15/blazedcloud-sync/maintainability)
+
 # Notice
 This project is still in it's **very** early stages and is set to a low priority. the mobile apps and the web portal are currently the main focus
 
