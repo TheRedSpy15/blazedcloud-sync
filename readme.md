@@ -1,10 +1,6 @@
-[![Maintainability](https://api.codeclimate.com/v1/badges/93656683239104137b3e/maintainability)](https://codeclimate.com/github/TheRedSpy15/blazedcloud-sync/maintainability)
-
 # Notice
-This project is still in it's **very** early stages and is set to a low priority. the mobile apps and the web portal are currently the main focus
+This repository is deprecated in favor of a single cross platform client
 
-This project also is a CLI (command line interface) program. The idea being it makes the program "lighter" with it's function being very simple, a GUI (graphical user interface) is not needed. However a GUI version is planned. But it is still in the planning phase
+**Main repository: https://github.com/TheRedSpy15/blazedcloud**
 
-# Usage
-
-The desktop sync tool is distributed in `.zip` files. Download the correct one for your operating system, extract, and run the release executable. If you are on Windows, it will be `release.exe`. It is **recomended** to create a shortcut to this file
+**Windows Specific instructions: https://github.com/TheRedSpy15/blazedcloud/blob/main/how-to-windows.md**
